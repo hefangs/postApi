@@ -1,0 +1,315 @@
+{
+	"info": {
+		"_postman_id": "a1f712f7-0886-4ec4-9384-3d6c90f77187",
+		"name": "New Collection",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "12857136"
+	},
+	"item": [
+		{
+			"name": "获取key",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Extract unikey and set as environment variable\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    if (jsonData.data && jsonData.data.unikey) {",
+							"        pm.environment.set(\"unikey\", jsonData.data.unikey);",
+							"        pm.test(\"unikey is extracted\", function() {",
+							"            pm.expect(pm.environment.get(\"unikey\")).to.eql(jsonData.data.unikey);",
+							"        });",
+							"    } else {",
+							"        pm.test(\"unikey is not present in response\", function() {",
+							"            pm.expect(jsonData.data).to.have.property('unikey');",
+							"        });",
+							"    }",
+							"});",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/login/qr/key",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"login",
+						"qr",
+						"key"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "创建key",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Extract unikey and set as environment variable\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    if (jsonData.data && jsonData.data.qrurl) {",
+							"        pm.environment.set(\"qrurl\", jsonData.data.qrurl);",
+							"        pm.test(\"qrurl is extracted\", function() {",
+							"            pm.expect(pm.environment.get(\"qrurl\")).to.eql(jsonData.data.qrurl);",
+							"        });",
+							"    } ",
+							"})",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/login/qr/create?key={{unikey}}",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"login",
+						"qr",
+						"create"
+					],
+					"query": [
+						{
+							"key": "key",
+							"value": "{{unikey}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "生成二维码",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={{qrurl}}",
+					"protocol": "https",
+					"host": [
+						"api",
+						"qrserver",
+						"com"
+					],
+					"path": [
+						"v1",
+						"create-qr-code",
+						""
+					],
+					"query": [
+						{
+							"key": "size",
+							"value": "150x150"
+						},
+						{
+							"key": "data",
+							"value": "{{qrurl}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "检查key",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"    var jsonData = pm.response.json()",
+							"    console.log(jsonData.code)",
+							"    console.log(jsonData.message)",
+							"});",
+							"",
+							"",
+							"// 获取响应中的所有 Set-Cookie 头",
+							"let setCookieHeaders = pm.response.headers.filter(function(header) {",
+							"    return header.key.toLowerCase() === 'set-cookie';",
+							"});",
+							"",
+							"// 打印所有 Set-Cookie 头到控制台",
+							"console.log('Set-Cookie headers:', setCookieHeaders);",
+							"",
+							"if (setCookieHeaders.length > 0) {",
+							"    // 定义一个变量来存储 MUSIC_U 的值",
+							"    let musicUValue = '';",
+							"",
+							"    // 遍历所有的 Set-Cookie 头",
+							"    setCookieHeaders.forEach(function(header) {",
+							"        // 使用正则表达式从 Set-Cookie 头中提取 MUSIC_U 的值",
+							"        let match = header.value.match(/MUSIC_U=([^;]*)/);",
+							"        if (match && match[1]) {",
+							"            musicUValue = match[1];",
+							"        }",
+							"    });",
+							"",
+							"    // 如果找到了 MUSIC_U 的值，则将其保存为环境变量",
+							"    if (musicUValue !== '') {",
+							"        pm.environment.set('MUSIC_U', musicUValue);",
+							"        console.log('MUSIC_U Cookie:', musicUValue);",
+							"    } else {",
+							"        console.log('MUSIC_U not found in Set-Cookie headers.');",
+							"    }",
+							"} else {",
+							"    console.log('No Set-Cookie headers found in the response.');",
+							"}",
+							"",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/login/qr/check?key={{unikey}}",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"login",
+						"qr",
+						"check"
+					],
+					"query": [
+						{
+							"key": "key",
+							"value": "{{unikey}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "登录状态",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"    var jsonData = pm.response.json()",
+							"    console.log(jsonData.data.account.id)",
+							"});",
+							"",
+							"pm.test(\"Extract uid and set as environment variable\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    if (jsonData.data && jsonData.data.account.id) {",
+							"        pm.environment.set(\"uid\", jsonData.data.account.id);",
+							"        pm.test(\"unikey is extracted\", function() {",
+							"            pm.expect(pm.environment.get(\"uid\")).to.eql(jsonData.data.account.id);",
+							"        });",
+							"    } ",
+							"});",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/login/status",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"login",
+						"status"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "获取用户详情",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/user/detail?uid={{uid}}",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"user",
+						"detail"
+					],
+					"query": [
+						{
+							"key": "uid",
+							"value": "{{uid}}"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
