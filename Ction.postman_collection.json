@@ -7,196 +7,30 @@
 	},
 	"item": [
 		{
-			"name": "获取key",
+			"name": "登录",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Status code is 200\", function () {",
-							"    pm.response.to.have.status(200);",
-							"});",
-							"",
-							"pm.test(\"Extract unikey and set as environment variable\", function () {",
+							"pm.test(\"Status code is 200\",  ()=>{",
+							"    pm.response.to.have.status(200)",
+							"})",
+							"pm.test(\"console.log token and cookie\",  ()=> {",
 							"    var jsonData = pm.response.json();",
-							"    if (jsonData.data && jsonData.data.unikey) {",
-							"        pm.environment.set(\"unikey\", jsonData.data.unikey);",
-							"        pm.test(\"unikey is extracted\", function() {",
-							"            pm.expect(pm.environment.get(\"unikey\")).to.eql(jsonData.data.unikey);",
-							"        });",
-							"    } else {",
-							"        pm.test(\"unikey is not present in response\", function() {",
-							"            pm.expect(jsonData.data).to.have.property('unikey');",
-							"        });",
-							"    }",
-							"});",
-							""
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{url}}/login/qr/key",
-					"host": [
-						"{{url}}"
-					],
-					"path": [
-						"login",
-						"qr",
-						"key"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "创建key",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Status code is 200\", function () {",
-							"    pm.response.to.have.status(200);",
-							"});",
-							"",
-							"pm.test(\"Extract unikey and set as environment variable\", function () {",
-							"    var jsonData = pm.response.json();",
-							"    if (jsonData.data && jsonData.data.qrurl) {",
-							"        pm.environment.set(\"qrurl\", jsonData.data.qrurl);",
-							"        pm.test(\"qrurl is extracted\", function() {",
-							"            pm.expect(pm.environment.get(\"qrurl\")).to.eql(jsonData.data.qrurl);",
-							"        });",
-							"    } ",
+							"    console.log(jsonData.token)",
+							"    console.log(jsonData.cookie)",
 							"})",
 							""
 						],
 						"type": "text/javascript",
 						"packages": {}
 					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{url}}/login/qr/create?key={{unikey}}",
-					"host": [
-						"{{url}}"
-					],
-					"path": [
-						"login",
-						"qr",
-						"create"
-					],
-					"query": [
-						{
-							"key": "key",
-							"value": "{{unikey}}"
-						}
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "生成二维码",
-			"event": [
+				},
 				{
-					"listen": "test",
+					"listen": "prerequest",
 					"script": {
 						"exec": [
-							"pm.test(\"Status code is 200\", function () {",
-							"    pm.response.to.have.status(200);",
-							"});"
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={{qrurl}}",
-					"protocol": "https",
-					"host": [
-						"api",
-						"qrserver",
-						"com"
-					],
-					"path": [
-						"v1",
-						"create-qr-code",
-						""
-					],
-					"query": [
-						{
-							"key": "size",
-							"value": "150x150"
-						},
-						{
-							"key": "data",
-							"value": "{{qrurl}}"
-						}
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "检查key",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Status code is 200\", function () {",
-							"    pm.response.to.have.status(200);",
-							"    var jsonData = pm.response.json()",
-							"    console.log(jsonData.code)",
-							"    console.log(jsonData.message)",
-							"});",
-							"",
-							"",
-							"// 获取响应中的所有 Set-Cookie 头",
-							"let setCookieHeaders = pm.response.headers.filter(function(header) {",
-							"    return header.key.toLowerCase() === 'set-cookie';",
-							"});",
-							"",
-							"// 打印所有 Set-Cookie 头到控制台",
-							"console.log('Set-Cookie headers:', setCookieHeaders);",
-							"",
-							"if (setCookieHeaders.length > 0) {",
-							"    // 定义一个变量来存储 MUSIC_U 的值",
-							"    let musicUValue = '';",
-							"",
-							"    // 遍历所有的 Set-Cookie 头",
-							"    setCookieHeaders.forEach(function(header) {",
-							"        // 使用正则表达式从 Set-Cookie 头中提取 MUSIC_U 的值",
-							"        let match = header.value.match(/MUSIC_U=([^;]*)/);",
-							"        if (match && match[1]) {",
-							"            musicUValue = match[1];",
-							"        }",
-							"    });",
-							"",
-							"    // 如果找到了 MUSIC_U 的值，则将其保存为环境变量",
-							"    if (musicUValue !== '') {",
-							"        pm.environment.set('MUSIC_U', musicUValue);",
-							"        console.log('MUSIC_U Cookie:', musicUValue);",
-							"    } else {",
-							"        console.log('MUSIC_U not found in Set-Cookie headers.');",
-							"    }",
-							"} else {",
-							"    console.log('No Set-Cookie headers found in the response.');",
-							"}",
-							"",
 							""
 						],
 						"type": "text/javascript",
@@ -208,19 +42,186 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{url}}/login/qr/check?key={{unikey}}",
+					"raw": "{{url}}/login/cellphone?phone=15000840699&password=hf15000840699",
 					"host": [
 						"{{url}}"
 					],
 					"path": [
 						"login",
-						"qr",
+						"cellphone"
+					],
+					"query": [
+						{
+							"key": "phone",
+							"value": "15000840699"
+						},
+						{
+							"key": "password",
+							"value": "hf15000840699"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "获取用户播放记录",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"})",
+							"",
+							"pm.test(\"Response data length is greater than 0\",  ()=> {",
+							"    var jsonData =  pm.response.json()",
+							"    pm.expect(jsonData.allData.length).to.be.above(0)",
+							"})",
+							"",
+							"",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/user/record?uid={{uid}}&type=0",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"user",
+						"record"
+					],
+					"query": [
+						{
+							"key": "uid",
+							"value": "{{uid}}"
+						},
+						{
+							"key": "type",
+							"value": "0"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "检测手机号码是否已注册",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\",  ()=> {",
+							"  pm.response.to.have.status(200);",
+							"})",
+							"pm.test(\"exist  is 1\",  ()=> {",
+							"  var jsonData = pm.response.json()",
+							"  pm.expect(jsonData.exist).to.eql(1)",
+							"})",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/cellphone/existence/check?phone=15000840699",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"cellphone",
+						"existence",
 						"check"
 					],
 					"query": [
 						{
-							"key": "key",
-							"value": "{{unikey}}"
+							"key": "phone",
+							"value": "15000840699"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "初始化昵称",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\",  ()=> {",
+							"  pm.response.to.have.status(200)",
+							"})",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/activate/init/profile?nickname=hefangss111112",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"activate",
+						"init",
+						"profile"
+					],
+					"query": [
+						{
+							"key": "nickname",
+							"value": "hefangss111112"
 						}
 					]
 				}
@@ -234,21 +235,25 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Status code is 200\", function () {",
-							"    pm.response.to.have.status(200);",
-							"    var jsonData = pm.response.json()",
-							"    console.log(jsonData.data.account.id)",
-							"});",
-							"",
-							"pm.test(\"Extract uid and set as environment variable\", function () {",
-							"    var jsonData = pm.response.json();",
-							"    if (jsonData.data && jsonData.data.account.id) {",
-							"        pm.environment.set(\"uid\", jsonData.data.account.id);",
-							"        pm.test(\"unikey is extracted\", function() {",
-							"            pm.expect(pm.environment.get(\"uid\")).to.eql(jsonData.data.account.id);",
-							"        });",
-							"    } ",
-							"});",
+							"pm.test(\"Status code is 200\",  ()=> {",
+							"  pm.response.to.have.status(200)",
+							"})",
+							"pm.test('id is 358047007',()=>{",
+							"  let jsonData  = pm.response.json()",
+							"  pm.expect(jsonData.data.account.id).to.be.eql(358047007)",
+							"  pm.environment.set('uid',jsonData.data.account.id)",
+							"  console.log(jsonData.data.account.id)",
+							"})",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
 							""
 						],
 						"type": "text/javascript",
@@ -279,9 +284,23 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Status code is 200\", function () {",
-							"    pm.response.to.have.status(200);",
-							"});",
+							"pm.test(\"Status code is 200\",  ()=> {",
+							"  pm.response.to.have.status(200)",
+							"})",
+							"pm.test('id is 358047007',()=>{",
+							"  let jsonData  = pm.response.json()",
+							"  pm.expect(jsonData.data.account.id).to.be.eql(358047007)",
+							"})",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
 							""
 						],
 						"type": "text/javascript",
@@ -293,18 +312,1579 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{url}}/user/detail?uid={{uid}}",
+					"raw": "{{url}}/login/status",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"login",
+						"status"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "获取账号信息",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\",  ()=> {",
+							"  pm.response.to.have.status(200)",
+							"})",
+							"pm.test('id is 358047007',()=>{",
+							"  let jsonData  = pm.response.json()",
+							"  pm.expect(jsonData.account.id).to.be.eql(358047007)",
+							"})",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/user/account",
 					"host": [
 						"{{url}}"
 					],
 					"path": [
 						"user",
-						"detail"
+						"account"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "获取用户信息歌单收藏mvdj数量",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\",  ()=> {",
+							"  pm.response.to.have.status(200)",
+							"})",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/user/subcount",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"user",
+						"subcount"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "获取用户等级信息",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\",  ()=> {",
+							"  pm.response.to.have.status(200)",
+							"})",
+							"pm.test('userId is 358047007',()=>{",
+							"  let jsonData = pm.response.json()",
+							"  pm.expect(jsonData.data.userId).to.be.eql(358047007)",
+							"})"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/user/level",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"user",
+						"level"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "获取用户绑定信息",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\",  ()=> {",
+							"  pm.response.to.have.status(200)",
+							"})",
+							"pm.test('userId is 358047007',()=>{",
+							"  let jsonData = pm.response.json()",
+							"  jsonData.bindings.forEach((binding)=>{",
+							"    pm.expect(binding.userId).to.be.eql(358047007)",
+							"  })",
+							"})"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/user/binding?uid={{uid}}",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"user",
+						"binding"
 					],
 					"query": [
 						{
 							"key": "uid",
 							"value": "{{uid}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "更新用户信息",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\",  ()=> {",
+							"  pm.response.to.have.status(200)",
+							"})",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/user/update?gender=0&birthday=1525918298004&nickname=test20020211&province=440000&city=440300&signature=test",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"user",
+						"update"
+					],
+					"query": [
+						{
+							"key": "gender",
+							"value": "0"
+						},
+						{
+							"key": "birthday",
+							"value": "1525918298004"
+						},
+						{
+							"key": "nickname",
+							"value": "test20020211"
+						},
+						{
+							"key": "province",
+							"value": "440000"
+						},
+						{
+							"key": "city",
+							"value": "440300"
+						},
+						{
+							"key": "signature",
+							"value": "test"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "私信和通知",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\",  ()=> {",
+							"  pm.response.to.have.status(200)",
+							"})",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/pl/count",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"pl",
+						"count"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "国家编码列表",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\",  ()=> {",
+							"  pm.response.to.have.status(200)",
+							"})",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/countries/code/list",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"countries",
+						"code",
+						"list"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "获取用户歌单",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\",  ()=> {",
+							"  pm.response.to.have.status(200)",
+							"})",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"let uid = pm.environment.get(\"uid\");",
+							"",
+							"// 默认值（如果未传递参数，则使用这些默认值）",
+							"let defaultLimit = 50;",
+							"let defaultOffset = 0;",
+							"",
+							"// 从环境变量中获取 limit 和 offset",
+							"let limit = pm.environment.get(\"limit\");",
+							"let offset = pm.environment.get(\"offset\");",
+							"",
+							"// 检查 uid 是否存在，如果不存在，抛出错误",
+							"if (!uid) {",
+							"    throw new Error(\"uid is required\");",
+							"}",
+							"",
+							"// 构建基本 URL",
+							"let url = `http://localhost:3000/user/playlist?uid=${uid}`;",
+							"",
+							"// 动态添加 limit 和 offset 参数（仅在它们有值时添加）",
+							"if (limit !== \"\" && limit !== null && limit !== undefined) {",
+							"    url += `&limit=${limit}`;",
+							"} else {",
+							"    url += `&limit=${defaultLimit}`;",
+							"}",
+							"",
+							"if (offset !== \"\" && offset !== null && offset !== undefined) {",
+							"    url += `&offset=${offset}`;",
+							"} else {",
+							"    url += `&offset=${defaultOffset}`;",
+							"}",
+							"",
+							"// 更新请求 URL",
+							"pm.request.url = url;",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/user/playlist?uid={{uid}}",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"user",
+						"playlist"
+					],
+					"query": [
+						{
+							"key": "uid",
+							"value": "{{uid}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "更新歌单",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\",  ()=> {",
+							"  pm.response.to.have.status(200)",
+							"})",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/playlist/update?id=10178922332&name=新歌单&desc=描述&tags=欧美",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"playlist",
+						"update"
+					],
+					"query": [
+						{
+							"key": "id",
+							"value": "10178922332"
+						},
+						{
+							"key": "name",
+							"value": "新歌单"
+						},
+						{
+							"key": "desc",
+							"value": "描述"
+						},
+						{
+							"key": "tags",
+							"value": "欧美"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "更新歌单描述",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\",  ()=> {",
+							"  pm.response.to.have.status(200)",
+							"})",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/playlist/desc/update?id=10178922332&desc=描述10178922332",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"playlist",
+						"desc",
+						"update"
+					],
+					"query": [
+						{
+							"key": "id",
+							"value": "10178922332"
+						},
+						{
+							"key": "desc",
+							"value": "描述10178922332"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "获取用户历史评论",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\",  ()=> {",
+							"  pm.response.to.have.status(200)",
+							"})",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"let uid = pm.environment.get(\"uid\");",
+							"",
+							"// 默认值（如果未传递参数，则使用这些默认值）",
+							"let defaultLimit = 10;",
+							"let defaultTime = Date.now();",
+							"",
+							"// 从环境变量中获取 limit 和 offset",
+							"let limit = pm.environment.get(\"limit\");",
+							"let time = pm.environment.get(\"time\");",
+							"",
+							"// 检查 uid 是否存在，如果不存在，抛出错误",
+							"if (!uid) {",
+							"    throw new Error(\"uid is required\");",
+							"}",
+							"",
+							"// 构建基本 URL",
+							"let url = `http://localhost:3000/user/comment/history?uid=${uid}`;",
+							"",
+							"// 动态添加 limit 和 offset 参数（仅在它们有值时添加）",
+							"if (limit !== \"\" && limit !== null && limit !== undefined) {",
+							"    url += `&limit=${limit}`;",
+							"} else {",
+							"    url += `&limit=${defaultLimit}`;",
+							"}",
+							"",
+							"if (time !== \"\" && time !== null && time !== undefined) {",
+							"    url += `&time=${time}`;",
+							"} else {",
+							"    url += `&time=${defaultTime}`;",
+							"}",
+							"",
+							"// 更新请求 URL",
+							"pm.request.url = url;",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/user/comment/history?uid={{uid}}",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"user",
+						"comment",
+						"history"
+					],
+					"query": [
+						{
+							"key": "uid",
+							"value": "{{uid}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "获取用户电台",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\",  ()=> {",
+							"  pm.response.to.have.status(200)",
+							"})",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/user/dj?uid={{uid}}",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"user",
+						"dj"
+					],
+					"query": [
+						{
+							"key": "uid",
+							"value": "{{uid}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "获取用户关注列表",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\",  ()=> {",
+							"  pm.response.to.have.status(200)",
+							"})",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"let uid = pm.environment.get(\"uid\");",
+							"",
+							"// 默认值（如果未传递参数，则使用这些默认值）",
+							"let defaultLimit = 30;",
+							"let defaultOffset = 0;",
+							"",
+							"// 从环境变量中获取 limit 和 offset",
+							"let limit = pm.environment.get(\"limit\");",
+							"let offset = pm.environment.get(\"offset\");",
+							"",
+							"// 检查 uid 是否存在，如果不存在，抛出错误",
+							"if (!uid) {",
+							"    throw new Error(\"uid is required\");",
+							"}",
+							"",
+							"// 构建基本 URL",
+							"let url = `http://localhost:3000/user/follows?uid=${uid}`;",
+							"",
+							"// 动态添加 limit 和 offset 参数（仅在它们有值时添加）",
+							"if (limit !== \"\" && limit !== null && limit !== undefined) {",
+							"    url += `&limit=${limit}`;",
+							"} else {",
+							"    url += `&limit=${defaultLimit}`;",
+							"}",
+							"",
+							"if (offset !== \"\" && offset !== null && offset !== undefined) {",
+							"    url += `&offset=${offset}`;",
+							"} else {",
+							"    url += `&offset=${defaultOffset}`;",
+							"}",
+							"",
+							"// 更新请求 URL",
+							"pm.request.url = url;",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/user/follows?uid={{uid}}",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"user",
+						"follows"
+					],
+					"query": [
+						{
+							"key": "uid",
+							"value": "{{uid}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "获取用户粉丝列表",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\",  ()=> {",
+							"  pm.response.to.have.status(200)",
+							"})",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"let uid = pm.environment.get(\"uid\");",
+							"",
+							"// 默认值（如果未传递参数，则使用这些默认值）",
+							"let defaultLimit = 30;",
+							"let defaultOffset = 0;",
+							"",
+							"// 从环境变量中获取 limit 和 offset",
+							"let limit = pm.environment.get(\"limit\");",
+							"let offset = pm.environment.get(\"offset\");",
+							"",
+							"// 检查 uid 是否存在，如果不存在，抛出错误",
+							"if (!uid) {",
+							"    throw new Error(\"uid is required\");",
+							"}",
+							"",
+							"// 构建基本 URL",
+							"let url = `http://localhost:3000/user/followeds?uid=${uid}`;",
+							"",
+							"// 动态添加 limit 和 offset 参数（仅在它们有值时添加）",
+							"if (limit !== \"\" && limit !== null && limit !== undefined) {",
+							"    url += `&limit=${limit}`;",
+							"} else {",
+							"    url += `&limit=${defaultLimit}`;",
+							"}",
+							"",
+							"if (offset !== \"\" && offset !== null && offset !== undefined) {",
+							"    url += `&offset=${offset}`;",
+							"} else {",
+							"    url += `&offset=${defaultOffset}`;",
+							"}",
+							"",
+							"// 更新请求 URL",
+							"pm.request.url = url;",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/user/followeds?uid={{uid}}",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"user",
+						"followeds"
+					],
+					"query": [
+						{
+							"key": "uid",
+							"value": "{{uid}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "获取用户动态",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\",  ()=> {",
+							"  pm.response.to.have.status(200)",
+							"})",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"let uid = pm.environment.get(\"uid\");",
+							"",
+							"// 默认值（如果未传递参数，则使用这些默认值）",
+							"let defaultLimit = 30;",
+							"let defaultLastTime = Date.now();",
+							"",
+							"// 从环境变量中获取 limit 和 offset",
+							"let limit = pm.environment.get(\"limit\");",
+							"let lasttime = pm.environment.get(\"lasttime\");",
+							"",
+							"// 检查 uid 是否存在，如果不存在，抛出错误",
+							"if (!uid) {",
+							"    throw new Error(\"uid is required\");",
+							"}",
+							"",
+							"// 构建基本 URL",
+							"let url = `http://localhost:3000/user/event?uid=${uid}`;",
+							"",
+							"// 动态添加 limit 和 offset 参数（仅在它们有值时添加）",
+							"if (limit !== \"\" && limit !== null && limit !== undefined) {",
+							"    url += `&limit=${limit}`;",
+							"} else {",
+							"    url += `&limit=${defaultLimit}`;",
+							"}",
+							"",
+							"if (lasttime !== \"\" && lasttime !== null && lasttime !== undefined) {",
+							"    url += `&lasttime=${lasttime}`;",
+							"} else {",
+							"    url += `&lasttime=${defaultLastTime}`;",
+							"}",
+							"",
+							"// 更新请求 URL",
+							"pm.request.url = url;",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/user/event?uid={{uid}}",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"user",
+						"event"
+					],
+					"query": [
+						{
+							"key": "uid",
+							"value": "{{uid}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "转发用户动态",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\",  ()=> {",
+							"  pm.response.to.have.status(200)",
+							"})",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/event/forward?evId=24944169710&uid={{uid}}&forwards=test",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"event",
+						"forward"
+					],
+					"query": [
+						{
+							"key": "evId",
+							"value": "24944169710"
+						},
+						{
+							"key": "uid",
+							"value": "{{uid}}"
+						},
+						{
+							"key": "forwards",
+							"value": "test"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "删除用户动态",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\",  ()=> {",
+							"  pm.response.to.have.status(200)",
+							"})",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/event/del?evId=24944052885",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"event",
+						"del"
+					],
+					"query": [
+						{
+							"key": "evId",
+							"value": "24944052885"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "分享文本、歌曲、歌单、mv、电台、电台节目到动态",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\",  ()=> {",
+							"  pm.response.to.have.status(200)",
+							"})",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"let id = pm.environment.get(\"id\");",
+							"let type = pm.environment.get(\"type\");",
+							"let msg = pm.environment.get(\"msg\");",
+							"",
+							"",
+							"let defaultType",
+							"let defaultTypeAll = [\"song\", \"playlist\", \"mv\", \"djradio\", \"djprogram\", \"album\"]",
+							"if (!defaultTypeAll.includes(type)) {",
+							"    defaultType = \"song\";",
+							"}",
+							"let defaultMsg ='share resource'",
+							"if (defaultMsg.length > 140) {",
+							"    defaultMsg = defaultMsg.substring(0, 140);",
+							"}",
+							"",
+							"",
+							"if (!id) {",
+							"    throw new Error(\"id is required\");",
+							"}",
+							"",
+							"// 构建基本 URL",
+							"let url = `http://localhost:3000/share/resource?id=${id}`;",
+							"",
+							"if (type !== \"\" && type !== null && type !== undefined) {",
+							"    url += `&type=${type}`;",
+							"} else {",
+							"    url += `&type=${defaultType}`;",
+							"}",
+							"",
+							"if (msg !== \"\" && msg !== null && msg !== undefined) {",
+							"    url += `&msg=${msg}`;",
+							"} else {",
+							"    url += `&msg=${defaultMsg}`;",
+							"}",
+							"",
+							"// 更新请求 URL",
+							"pm.request.url = url;",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/share/resource?id=28302514",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"share",
+						"resource"
+					],
+					"query": [
+						{
+							"key": "id",
+							"value": "28302514",
+							"description": "分享的歌曲id"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "获取动态评论",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\",  ()=> {",
+							"  pm.response.to.have.status(200)",
+							"})",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/comment/event?threadId=A_EV_2_6559519868_32953014",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"comment",
+						"event"
+					],
+					"query": [
+						{
+							"key": "threadId",
+							"value": "A_EV_2_6559519868_32953014"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "关注用户",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\",  ()=> {",
+							"  pm.response.to.have.status(200)",
+							"})",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/follow?id=6066&t=1",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"follow"
+					],
+					"query": [
+						{
+							"key": "id",
+							"value": "6066"
+						},
+						{
+							"key": "t",
+							"value": "1"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "获取用户播放记录",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\",  ()=> {",
+							"  pm.response.to.have.status(200)",
+							"})",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/user/record?uid={{uid}}&type=0",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"user",
+						"record"
+					],
+					"query": [
+						{
+							"key": "uid",
+							"value": "{{uid}}"
+						},
+						{
+							"key": "type",
+							"value": "0"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "获取热门话题",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\",  ()=> {",
+							"  pm.response.to.have.status(200)",
+							"})",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"let uid = pm.environment.get(\"uid\");",
+							"",
+							"let defaultLimit = 20;",
+							"let defaultOffset = 0;",
+							"",
+							"let limit = pm.environment.get(\"limit\");",
+							"let offset = pm.environment.get(\"offset\");",
+							"",
+							"",
+							"",
+							"// 构建基本 URL",
+							"let url = `http://localhost:3000/hot/topic/`",
+							"",
+							"if (limit !== \"\" && limit !== null && limit !== undefined) {",
+							"    url += `&limit=${limit}`;",
+							"} else {",
+							"    url += `&limit=${defaultLimit}`;",
+							"}",
+							"",
+							"if (offset !== \"\" && offset !== null && offset !== undefined) {",
+							"    url += `&offset=${offset}`;",
+							"} else {",
+							"    url += `&offset=${defaultOffset}`;",
+							"}",
+							"",
+							"// 更新请求 URL",
+							"pm.request.url = url;",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/hot/topic",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"hot",
+						"topic"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "获取话题详情",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\",  ()=> {",
+							"  pm.response.to.have.status(200)",
+							"})",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/topic/detail/event/hot?actid=111551188",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"topic",
+						"detail",
+						"event",
+						"hot"
+					],
+					"query": [
+						{
+							"key": "actid",
+							"value": "111551188"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "获取话题详情热门动态",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\",  ()=> {",
+							"  pm.response.to.have.status(200)",
+							"})",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/topic/detail/event/hot?actid=115842105",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"topic",
+						"detail",
+						"event",
+						"hot"
+					],
+					"query": [
+						{
+							"key": "actid",
+							"value": "115842105"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "心动模式/智能播放",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\",  ()=> {",
+							"  pm.response.to.have.status(200)",
+							"})",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"",
+							"",
+							"let defaultSig = 1877996649;",
+							"",
+							"",
+							"let sig = pm.environment.get(\"sig\");",
+							"",
+							"",
+							"// 构建基本 URL",
+							"let url = `http://localhost:3000/playmode/intelligence/list?id=28302514&pid=893126993`",
+							"",
+							"",
+							"",
+							"if (sig !== \"\" && sig !== null && sig !== undefined) {",
+							"    url += `&sig=${sig}`;",
+							"} else {",
+							"    url += `&sig=${defaultSig}`;",
+							"}",
+							"",
+							"// 更新请求 URL",
+							"pm.request.url = url;",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/playmode/intelligence/list?id=28302514&pid=893126993",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"playmode",
+						"intelligence",
+						"list"
+					],
+					"query": [
+						{
+							"key": "id",
+							"value": "28302514"
+						},
+						{
+							"key": "pid",
+							"value": "893126993"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "获取动态消息",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\",  ()=> {",
+							"  pm.response.to.have.status(200)",
+							"})",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/event?pagesize=20&lasttime=1718473149222",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"event"
+					],
+					"query": [
+						{
+							"key": "pagesize",
+							"value": "20"
+						},
+						{
+							"key": "lasttime",
+							"value": "1718473149222"
 						}
 					]
 				}
@@ -329,7 +1909,15 @@
 				"type": "text/javascript",
 				"packages": {},
 				"exec": [
-					""
+					"// // 获取当前请求的 URL 路径",
+					"// const relativePath = pm.request.url.getPath();",
+					"// // 获取 baseUrl 环境变量",
+					"// const baseUrl = pm.environment.get(\"url\");",
+					"// // 动态设置完整 URL",
+					"// pm.request.url = baseUrl + relativePath;",
+					"",
+					"",
+					"// // "
 				]
 			}
 		},
